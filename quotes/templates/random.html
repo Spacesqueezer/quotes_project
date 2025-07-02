@@ -1,0 +1,7 @@
+{% if quote %}
+	<h2>{{ quote.text }}</h2>
+	<p><em>{{ quote.source }}</em></p>
+	<p>Просмотры: {{ quote.views }}</p>
+{% else %}
+	<p>Цитат пока нет.</p>
+{% endif %}
