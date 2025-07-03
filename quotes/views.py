@@ -77,15 +77,21 @@ def add_quote(request):
         if Quote.objects.filter(text__iexact=normalized_new).exists():
             # Если цитата уже существует, возвращаем ошибку
             return render(request, 'add.html', {'form': form, 'error': 'Похожая цитата уже существует.'})
+
         # Проверяем, есть ли у источника уже 3 цитаты
         source = form.cleaned_data['source']
         if Quote.objects.filter(source=source).count() >= 3:
             # Если у источника уже 3 цитаты, возвращаем ошибку
             return render(request, 'add.html', {'form': form, 'error': 'У этого источника уже 3 цитаты.'})
+
+        #TODO Сделать проверку источника
+
         # Сохраняем новую цитату
         form.save()
+
         # Перенаправляем пользователя на страницу случайной цитаты
         return redirect('random_quote')
+
     # Если форма не валидна, возвращаем страницу с формой
     return render(request, 'add.html', {'form': form})
 
@@ -130,3 +136,7 @@ def vote_quote(request):
     # Устанавливаем куки для голосования
     resp.set_cookie(cookie_key, action, max_age=31536000)
     return resp
+
+def top_ten(request):
+    quotes = Quote.objects.order_by('-views')[:10]
+    return render(request, 'top_ten.html', {'quotes': quotes})

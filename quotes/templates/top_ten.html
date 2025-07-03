@@ -1,0 +1,15 @@
+{% if quotes %}
+    <h2>Топ-10 цитат</h2>
+    <ul>
+        {% for quote in quotes %}
+            <li>
+                <p>{{ quote.text }}</p>
+                <p>Источник: {{ quote.source }}</p>
+                <p>Вес: {{ quote.weight }}</p>
+                <p>Количество просмотров: {{ quote.views }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Цитат пока нет.</p>
+{% endif %}
