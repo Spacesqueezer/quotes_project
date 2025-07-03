@@ -4,15 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f62ace60-a390-4dcb-aac7-56449b1eb9d9" name="Changes" comment="работает добавление цитат">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="f62ace60-a390-4dcb-aac7-56449b1eb9d9" name="Changes" comment="сделаны лайки/дизлайки, но пока один пользователь может сделать их любое количество">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/db.sqlite3" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/quotes/templates/random.html" beforeDir="false" afterPath="$PROJECT_DIR$/quotes/templates/random.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/quotes/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/quotes/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/quotes/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/quotes/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/quotes_project/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/quotes_project/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/quotes_project/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/quotes_project/urls.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,7 +103,15 @@
       <option name="project" value="LOCAL" />
       <updated>1751478486713</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="сделаны лайки/дизлайки, но пока один пользователь может сделать их любое количество">
+      <option name="closed" value="true" />
+      <created>1751560080440</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1751560080440</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -126,6 +129,7 @@
     <MESSAGE value="init commit" />
     <MESSAGE value="сделан главный экран" />
     <MESSAGE value="работает добавление цитат" />
-    <option name="LAST_COMMIT_MESSAGE" value="работает добавление цитат" />
+    <MESSAGE value="сделаны лайки/дизлайки, но пока один пользователь может сделать их любое количество" />
+    <option name="LAST_COMMIT_MESSAGE" value="сделаны лайки/дизлайки, но пока один пользователь может сделать их любое количество" />
   </component>
 </project>
