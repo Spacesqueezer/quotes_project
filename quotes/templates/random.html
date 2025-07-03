@@ -1,9 +1,63 @@
+{% load static %}
+
 {% if quote %}
 	<h2>{{ quote.text }}</h2>
 	<p><em>{{ quote.source }}</em></p>
 	<p>Просмотры: {{ quote.views }}</p>
+
+	<p>
+		<img id="likeBtn" src="{% static 'images/' %}{% if liked == 'like' %}green.png{% else %}gray_green.png{% endif %}"
+			alt="Like" style="cursor:pointer; width:24px; height:24px;">
+		<img id="dislikeBtn" src="{% static 'images/' %}{% if liked == 'dislike' %}red.png{% else %}gray_red.png{% endif %}"
+			alt="Dislike" style="cursor:pointer; width:24px; height:24px;">
+	</p>
+	<p>Лайков: <span id="likeCount">{{ quote.likes }}</span> | Дизлайков: <span id="dislikeCount">{{ quote.dislikes }}</span></p>
 {% else %}
 	<p>Цитат пока нет.</p>
 {% endif %}
 
 <a href="{% url 'add_quote' %}">Добавить цитату</a>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+	const likeBtn = document.getElementById('likeBtn');
+	const dislikeBtn = document.getElementById('dislikeBtn');
+	const quoteId = "{{ quote.id }}";
+
+	async function vote(action) {
+		const formData = new FormData();
+		formData.append('id', quoteId);
+		formData.append('action', action);
+
+		const response = await fetch("{% url 'vote_quote' %}", {
+			method: 'POST',
+			headers: {
+				'X-CSRFToken': '{{ csrf_token }}'
+			},
+			body: formData
+		});
+
+		const data = await response.json();
+		if (data.success) {
+			document.getElementById('likeCount').innerText = data.likes;
+			document.getElementById('dislikeCount').innerText = data.dislikes;
+
+			// Обновляем src иконок в зависимости от действия
+			if (data.action === 'like') {
+				likeBtn.src = "{% static 'images/green.png' %}";
+				dislikeBtn.src = "{% static 'images/gray_red.png' %}";
+			} else if (data.action === 'dislike') {
+				likeBtn.src = "{% static 'images/gray_green.png' %}";
+				dislikeBtn.src = "{% static 'images/red.png' %}";
+			} else {
+				// Если убрали голос или другой статус — серые иконки
+				likeBtn.src = "{% static 'images/gray_green.png' %}";
+				dislikeBtn.src = "{% static 'images/gray_red.png' %}";
+			}
+		}
+	}
+
+	likeBtn.addEventListener('click', () => vote('like'));
+	dislikeBtn.addEventListener('click', () => vote('dislike'));
+});
+</script>

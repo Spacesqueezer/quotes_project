@@ -1,5 +1,7 @@
 import bisect
 import random
+
+from django.http import request, JsonResponse
 from django.shortcuts import render, redirect
 from .forms import QuoteForm
 from .models import Quote
@@ -7,15 +9,21 @@ from .models import Quote
 
 def random_quote(request):
     quote = get_weighted_random_quote()
-    if not quote:
-        return render(request, 'random.html', {'quote': None})
+    form = QuoteForm()
+    liked = None
 
-    # увеличиваем счетчик просмотров
-    quote.views += 1
-    quote.save()
+    if quote:
+        quote.views += 1
+        quote.save()
 
-    # передаём цитату в шаблон
-    return render(request, 'random.html', {'quote': quote})
+        cookie_key = f"quote_{quote.id}_vote"
+        liked = request.COOKIES.get(cookie_key)
+
+    return render(request, 'random.html', {
+        'quote': quote,
+        'form': form,
+        'liked': liked
+    })
 
 
 def get_weighted_random_quote():
@@ -55,3 +63,30 @@ def add_quote(request):
                 form.save()
                 return redirect('random_quote')
     return render(request, 'add.html', {'form': form, 'error': error})
+
+
+def vote_quote(request):
+    if request.method == 'POST':
+        quote_id = request.POST.get('id')
+        action = request.POST.get('action')
+
+        try:
+            quote = Quote.objects.get(id=quote_id)
+        except Quote.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Цитата не найдена'})
+
+        if action == 'like':
+            quote.likes += 1
+        elif action == 'dislike':
+            quote.dislikes += 1
+
+        quote.save()
+
+    resp = JsonResponse({
+        'success': True,
+        'likes': quote.likes,
+        'dislikes': quote.dislikes,
+        'action': action
+    })
+    # resp.set_cookie(cookie_key, action, max_age=60 * 60 * 24 * 365)
+    return resp
