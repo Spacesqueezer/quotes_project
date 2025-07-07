@@ -1,15 +1,69 @@
-{% if quotes %}
-    <h2>Топ-10 цитат</h2>
-    <ul>
-        {% for quote in quotes %}
-            <li>
-                <p>{{ quote.text }}</p>
-                <p>Источник: {{ quote.source }}</p>
-                <p>Вес: {{ quote.weight }}</p>
-                <p>Количество просмотров: {{ quote.views }}</p>
-            </li>
-        {% endfor %}
-    </ul>
-{% else %}
-    <p>Цитат пока нет.</p>
-{% endif %}
+<html>
+    <head>
+        <style>
+            .quote_container {
+                display: flex;
+                flex-direction: column;
+                padding: 15px;
+                border: 2px solid #4CAF50;
+                border-radius: 8px;
+                background-color: #e8f5e9;
+                margin: 20px auto;
+            }
+
+            .quote_info {
+                display: flex;
+                justify-content: left;
+            }
+
+            .quote_text {
+                font-weight: bold;
+                font-size: 18px;
+            }
+
+            p {
+                margin: 5px;
+            }
+
+            hr {
+                border: none;
+                height: 1px;
+                background-color: #000;
+                margin: 10px 0;
+            }
+
+            select {
+                margin: 10px 0;
+                padding: 5px;
+                border-radius: 4px;
+                border: 1px solid #4CAF50;
+            }
+        </style>
+    </head>
+
+    <body>
+        {% if quotes %}
+            <button><a href="{% url 'random_quote' %}">На главную</a></button>
+            <h2>Топ-10 цитат</h2>
+            <ul id="quotes-list">
+                {% for quote in quotes %}
+                    <div class="quote_container">
+                        <div>
+                            <p class="quote_text">{{ quote.text }}</p>
+                            <p class="quote_source">{{ quote.source }}</p>
+                        </div>
+
+                        <hr>
+
+                        <div class="quote_info">
+                            <p>Вес: {{ quote.weight }}</p>
+                            <p>Количество просмотров: {{ quote.views }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Цитат пока нет.</p>
+        {% endif %}
+    </body>
+</html>

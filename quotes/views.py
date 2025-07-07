@@ -6,22 +6,23 @@ from .forms import QuoteForm
 from .models import Quote
 
 
-# Функция для получения случайной цитаты
+# Отображает случайную цитату на главной странице
 def random_quote(request):
-    # Получаем случайную цитату с учетом веса
+    # Получаем случайную цитату с учётом её веса
     quote = get_weighted_random_quote()
 
     if quote:
-        # Увеличиваем количество просмотров цитаты
+        # Увеличиваем счётчик просмотров
         quote.views += 1
         quote.save()
 
-        # Проверяем, есть ли у пользователя голос за эту цитату
+        # Проверяем, голосовал ли пользователь за эту цитату
         liked = request.COOKIES.get(f"quote_{quote.id}_vote")
     else:
+        # Если цитаты нет — ничего не выбрано
         liked = None
 
-    # Возвращаем страницу с цитатой
+    # Показываем шаблон с цитатой и формой
     return render(request, 'random.html', {
         'quote': quote,
         'form': QuoteForm(),
@@ -29,114 +30,147 @@ def random_quote(request):
     })
 
 
-# Функция для получения случайной цитаты с учетом веса
+# Выбирает случайную цитату с учётом "веса"
 def get_weighted_random_quote():
-    # Получаем все цитаты из базы данных
+    # Загружаем все цитаты
     quotes = Quote.objects.all()
 
     if not quotes:
-        # Если цитат нет, возвращаем None
+        # Если их нет — возвращаем None
         return None
 
-    # Создаем список весов цитат
+    # Создаём список весов
     weights = [q.weight for q in quotes]
 
-    # Создаем список накопленных весов
+    # Подсчитываем накопленные веса
     cumulative_weights = []
     total = 0
     for i in range(len(weights)):
-        total += weights[i]  # добавляем текущий вес к сумме
-        cumulative_weights.append(total)  # добавляем накопленную сумму в список
+        total += weights[i]
+        cumulative_weights.append(total)
 
-    # Генерируем случайное число от 1 до максимального накопленного веса
+    # Генерируем случайное число от 1 до общего веса
     r = random.randint(1, cumulative_weights[-1])
 
-    # Находим индекс цитаты, соответствующий случайному числу
+    # Определяем индекс, подходящий под это число
     index = bisect.bisect_left(cumulative_weights, r)
 
-    # Возвращаем цитату с найденным индексом
+    # Возвращаем нужную цитату
     return quotes[index]
 
 
-# Функция для нормализации текста
+# Приводит текст к простой форме для сравнения
 def normalize_text(text):
-    # Удаляем пробелы и приводим текст к нижнему регистру
+    # Удаляем пробелы и делаем все буквы маленькими
     return ''.join(text.lower().split())
 
 
-# Функция для добавления новой цитаты
+# Обрабатывает добавление новой цитаты через форму
 def add_quote(request):
-    # Создаем форму для добавления цитаты
+    # Создаём экземпляр формы, передаём туда POST-данные
     form = QuoteForm(request.POST or None)
 
     if form.is_valid():
-        # Нормализуем текст цитаты
+        # Подготавливаем текст новой цитаты
         normalized_new = normalize_text(form.cleaned_data['text'])
 
-        # Проверяем, есть ли уже такая цитата в базе данных
-        if Quote.objects.filter(text__iexact=normalized_new).exists():
-            # Если цитата уже существует, возвращаем ошибку
-            return render(request, 'add.html', {'form': form, 'error': 'Похожая цитата уже существует.'})
+        # Загружаем все существующие цитаты
+        existing_quotes = Quote.objects.all()
 
-        # Проверяем, есть ли у источника уже 3 цитаты
+        # Проверяем, есть ли уже такая (похожая) цитата
+        for quote in existing_quotes:
+            normalized_existing = normalize_text(quote.text)
+            if normalized_existing == normalized_new:
+                # Если нашли дубликат — выводим ошибку
+                return render(request, 'add.html', {
+                    'form': form,
+                    'error': 'Похожая цитата уже существует.'
+                })
+
+        # Проверяем, не превышен ли лимит в 3 цитаты от одного источника
         source = form.cleaned_data['source']
         if Quote.objects.filter(source=source).count() >= 3:
-            # Если у источника уже 3 цитаты, возвращаем ошибку
-            return render(request, 'add.html', {'form': form, 'error': 'У этого источника уже 3 цитаты.'})
+            return render(request, 'add.html', {
+                'form': form,
+                'error': 'У этого источника уже 3 цитаты.'
+            })
 
-        #TODO Сделать проверку источника
-
-        # Сохраняем новую цитату
+        # Сохраняем цитату
         form.save()
 
-        # Перенаправляем пользователя на страницу случайной цитаты
+        # Перенаправляем на главную
         return redirect('random_quote')
 
-    # Если форма не валидна, возвращаем страницу с формой
+    # Если форма невалидна — возвращаем её с ошибками
     return render(request, 'add.html', {'form': form})
 
 
-# Функция для голосования за цитату
+# Обрабатывает лайки и дизлайки
 def vote_quote(request):
-    # Проверяем, является ли запрос POST-запросом
+    # Проверяем, что запрос POST
     if request.method != 'POST':
-        # Если запрос не POST, возвращаем ошибку
         return JsonResponse({'success': False, 'error': 'Invalid request method'})
-    # Получаем идентификатор цитаты и действие (лайк или дизлайк)
+
+    # Получаем ID цитаты и действие (лайк или дизлайк)
     quote_id = request.POST.get('id')
     action = request.POST.get('action')
+
     try:
-        # Получаем цитату из базы данных
+        # Пытаемся получить нужную цитату
         quote = Quote.objects.get(id=quote_id)
     except Quote.DoesNotExist:
-        # Если цитаты нет, возвращаем ошибку
+        # Цитата не найдена — ошибка
         return JsonResponse({'success': False, 'error': 'Цитата не найдена'})
-    # Получаем ключ куки для голосования
+
+    # Получаем предыдущий голос пользователя из куки
     cookie_key = f"quote_{quote.id}_vote"
-    # Получаем предыдущий голос пользователя
     previous = request.COOKIES.get(cookie_key)
-    # Обновляем количество лайков и дизлайков
+
+    # Убираем старый голос
     if previous == 'like':
         quote.likes -= 1
     elif previous == 'dislike':
         quote.dislikes -= 1
+
+    # Добавляем новый голос
     if action == 'like':
         quote.likes += 1
     elif action == 'dislike':
         quote.dislikes += 1
-    # Сохраняем изменения в базе данных
+
+    # Сохраняем изменения
     quote.save()
-    # Возвращаем ответ с обновленными данными
+
+    # Формируем JSON-ответ
     resp = JsonResponse({
         'success': True,
         'likes': quote.likes,
         'dislikes': quote.dislikes,
         'action': action
     })
-    # Устанавливаем куки для голосования
+
+    # Сохраняем новое действие в куки
     resp.set_cookie(cookie_key, action, max_age=31536000)
     return resp
 
+
+# Показывает топ-10 цитат по просмотрам
 def top_ten(request):
     quotes = Quote.objects.order_by('-views')[:10]
     return render(request, 'top_ten.html', {'quotes': quotes})
+
+
+# Показывает топ-10 по просмотрам или весу (выбирается через GET-параметр)
+def top_quotes(request):
+    sort_by = request.GET.get('sort_by', 'views')
+    print("Сортировка по ", request.GET.get('sort_by'))
+
+    if sort_by == 'views':
+        quotes = Quote.objects.all().order_by('-views')[:10]
+    else:
+        quotes = Quote.objects.all().order_by('-weight')[:10]
+
+    return render(request, 'quotes/top_ten.html', {
+        'quotes': quotes,
+        'sort_by': sort_by
+    })

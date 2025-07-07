@@ -4,6 +4,32 @@
 <head>
 	<title>Цитаты</title>
 	<style>
+		.button {
+			display: inline-block;
+			padding: 10px 20px;
+			background-color: #4CAF50;
+			color: white;
+			text-decoration: none;
+			border: none;
+			border-radius: 4px;
+			font-size: 16px;
+			cursor: pointer;
+			transition: background-color 0.3s;
+			margin: 5px;
+			text-align: center;
+    	}
+
+    	.button:hover {
+        	background-color: #388E3C;
+    	}
+
+    	.nav-buttons {
+			margin: 20px auto;
+			max-width: 600px;
+			display: flex;
+			justify-content: center;
+    	}
+
 		.quote_container {
 			padding: 15px;
 			border: 2px solid #4CAF50;
@@ -42,11 +68,21 @@
 		img {
 			margin-right: 5px;
 		}
+
+		hr {
+			border: none;
+			height: 1px;
+			background-color: #000;
+			margin: 10px 0;
+        }
 	</style>
 </head>
 <body>
 
-<a href="{% url 'top_ten' %}">Топ-10</a>
+	<div class="nav-buttons">
+		<a href="{% url 'top_ten' %}" class="button">Топ-10</a>
+		<a href="{% url 'add_quote' %}" class="button">Добавить цитату</a>
+	</div>
 
 {% if quote %}
 	<div class="quote_container">
@@ -77,8 +113,7 @@
 	<p>Цитат пока нет.</p>
 {% endif %}
 
-<a href="{% url 'add_quote' %}">Добавить цитату</a><br><br><br><br>
-<button>Удалить цитату</button>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
